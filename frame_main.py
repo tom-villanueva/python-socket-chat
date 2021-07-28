@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
 	# Creo la vista principal y el cliente
 	ventana = VistaPrincipal()
-	cliente = Cliente("127.0.0.1", 1234)
+	cliente = Cliente("192.168.1.19", 1234)
 
 	# Creo el controlador y establezco la conexion del cliente
 	controlador = Controlador(cliente, ventana)

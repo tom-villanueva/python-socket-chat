@@ -51,7 +51,8 @@ class Cliente:
 
                 if not len(username_cabecera):
                     print('Conexion cerrada por el servidor')
-                    sys.exit()
+                    self.client_socket.close()
+                    sys.exit(1)
         
                 username_tamaño = int(username_cabecera.decode('utf-8').strip())
 

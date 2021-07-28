@@ -1,5 +1,6 @@
 import socket
 import select
+import sys
 
 class Server:
 
@@ -89,50 +90,54 @@ class Server:
         self.__establecer_conexion__()
         print(f'Escuchando para conexiones en {self.IP}:{self.PORT}...')
         while True:
-            '''
-            La función select recibe tres iterables que contienen descriptores de archivos (sockets):
-            - rlist: sockets en espera para lectura
-            - wlist: sockets en espera para escritura
-            - xlist: esperar a una excepcion
-            Y devuelve tres iterables, que son subconjuntos de los parametros
-            - lectura:    sockets en los que recibimos datos
-            - escritura: sockets listos para enviar datos a traves de ellos
-            - errores:   sockets con excepciones
-            '''
-            sockets_lectura, _, sockets_excepcion = select.select(self.lista_sockets, [], self.lista_sockets)
+            try:
+                '''
+                La función select recibe tres iterables que contienen descriptores de archivos (sockets):
+                - rlist: sockets en espera para lectura
+                - wlist: sockets en espera para escritura
+                - xlist: esperar a una excepcion
+                Y devuelve tres iterables, que son subconjuntos de los parametros
+                - lectura:   sockets en los que recibimos datos
+                - escritura: sockets listos para enviar datos a traves de ellos
+                - errores:   sockets con excepciones
+                '''           
+                sockets_lectura, _, sockets_excepcion = select.select(self.lista_sockets, [], self.lista_sockets, 1)
+                # por cada socket en el que recibimos datos
+                for socket_notificado in sockets_lectura:
 
-            # por cada socket en el que recibimos datos
-            for socket_notificado in sockets_lectura:
+                    # Si el socket es nuestro socket servidor, entonces recibimos una nueva conexion
+                    if socket_notificado == self.server_socket:
+                        exito = self.__aceptar_conexion__()
+                        # Si no hay nada, se desconecto, seguimos con la lista 
+                        if not exito:
+                            continue
 
-                # Si el socket es nuestro socket servidor, entonces recibimos una nueva conexion
-                if socket_notificado == self.server_socket:
-                    exito = self.__aceptar_conexion__()
+                    # Si el socket es un cliente, significa que recibimos mensaje del chat
+                    else:
 
-                    # Si no hay nada, se desconecto, seguimos con la lista 
-                    if not exito:
-                        continue
+                        mensaje = self.__recibir_mensaje__(socket_notificado)
 
-                # Si el socket es un cliente, significa que recibimos mensaje del chat
-                else:
+                        if not mensaje:
+                            self.__remover_conexion__(socket_notificado)
+                            continue
 
-                    mensaje = self.__recibir_mensaje__(socket_notificado)
+                        # Conseguir usuario del socket notificado, para saber quien mando el mensaje
+                        user = self.clientes[socket_notificado]
 
-                    if not mensaje:
-                        self.__remover_conexion__(socket_notificado)
-                        continue
+                        print(f'Mensaje recibido desde {user["datos"].decode("utf-8")}: {mensaje["datos"].decode("utf-8")}')
 
-                    # Conseguir usuario del socket notificado, para saber quien mando el mensaje
-                    user = self.clientes[socket_notificado]
+                        # Mandamos el mensaje a todos los self.clientes
+                        for client_socket in self.clientes:
+                            if client_socket != socket_notificado:
+                                client_socket.send(user['cabecera'] + user['datos'] + mensaje['cabecera'] + mensaje['datos'])
 
-                    print(f'Mensaje recibido desde {user["datos"].decode("utf-8")}: {mensaje["datos"].decode("utf-8")}')
+                # Si hubiese un error en un socket lo eliminamos 
+                for socket_notificado in sockets_excepcion:
+                    self.__remover_conexion__(socket_notificado)
 
-                    # Mandamos el mensaje a todos los self.clientes
-                    for client_socket in self.clientes:
-                        if client_socket != socket_notificado:
-                            client_socket.send(user['cabecera'] + user['datos'] + mensaje['cabecera'] + mensaje['datos'])
-
-            # Si hubiese un error en un socket lo eliminamos 
-            for socket_notificado in sockets_excepcion:
-                self.__remover_conexion__(socket_notificado)
+            except KeyboardInterrupt:
+                print("Sesión terminada")
+                self.server_socket.close()
+                sys.exit(1)
 
  
