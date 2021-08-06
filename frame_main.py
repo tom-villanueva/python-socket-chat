@@ -12,10 +12,12 @@ if __name__ == "__main__":
 	# Creo la ventana de bienvenida, tomo el username 
 	ventana_bienvenida = VistaDialogo()
 	username = ventana_bienvenida.usuario
+	ip = ventana_bienvenida.ip
+	puerto = ventana_bienvenida.port
 
 	# Creo la vista principal y el cliente
 	ventana = VistaPrincipal()
-	cliente = Cliente("192.168.1.19", 1234)
+	cliente = Cliente(ip, puerto)
 
 	# Creo el controlador y establezco la conexion del cliente
 	controlador = Controlador(cliente, ventana)

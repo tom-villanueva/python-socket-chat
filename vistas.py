@@ -9,10 +9,14 @@ class VistaDialogo:
 		self.window.title("Bienvenido")
 		self.__init_widgets__()
 		self.usuario = ''
+		self.ip = '127.0.0.1'
+		self.port = 1234
 		self.window.mainloop()
 
 	def clicked(self):
 		self.usuario = self.username.get()
+		self.ip = self.ipField.get()
+		self.port = int(self.portField.get())
 		self.window.destroy()
 
 	def __init_widgets__(self) -> None:
@@ -23,8 +27,20 @@ class VistaDialogo:
 		self.username = Entry(self.window,width=10)
 		self.username.grid(column=1, row=0)
 
+		self.labelIP = Label(self.window, text="IP: ")
+		self.labelIP.grid(column=0, row=1)
+
+		self.ipField = Entry(self.window,width=10)
+		self.ipField.grid(column=1, row=1)	
+
+		self.labelPort = Label(self.window, text="Puerto: ")
+		self.labelPort.grid(column=0, row=2)
+
+		self.portField = Entry(self.window,width=10)
+		self.portField.grid(column=1, row=2)
+
 		self.btn = Button(self.window, text="aceptar", command=self.clicked)
-		self.btn.grid(column=2, row=0)	
+		self.btn.grid(column=0, row=3)	
 
 class VistaPrincipal:
 

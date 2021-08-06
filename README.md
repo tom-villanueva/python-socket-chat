@@ -3,7 +3,7 @@
 ## Chatroom para la materia Redes UNTDF
 
 ### Requisitos:
-- Python 3 instalado
+- Python >= 3.7 instalado
 
 ### Instrucciones:
 - `cd` hasta la carpeta donde se quiere clonar el repositorio.
